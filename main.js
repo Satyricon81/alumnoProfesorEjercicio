@@ -3,6 +3,7 @@ const cardsAlumnos = document.querySelector("#cardsAlumnos")
 const cardsProfesores = document.querySelector("#cardsProfesores")
 const templateAlumno = document.querySelector("#templateAlumno").content
 const templateProfesor = document.querySelector("#templateProfesor").content
+const alert = document.querySelector(".alert")
 
 const alumnos = [] //Creamos un array vacio para ir llenandolo con las instancias que vayamos creando.
 const profesores = [] //Creamos un array vacio para ir llenandolo con las instancias que vayamos creando.
@@ -10,10 +11,10 @@ const profesores = [] //Creamos un array vacio para ir llenandolo con las instan
 //Delegacion de eventos para los botones de Aprobar o Suspender.
 document.addEventListener("click", (e) => {
     //console.log(e.target.dataset.nombre);
-    if(e.target.dataset.nombre) {
+    if(e.target.dataset.uid) {
         if(e.target.matches(".btn-success")) {
             alumnos.map(item => {
-                if(item.nombre === e.target.dataset.nombre) {
+                if(item.uid === e.target.dataset.uid) {
                     item.setEstado = true
                 }
                 return item
@@ -21,7 +22,7 @@ document.addEventListener("click", (e) => {
         }
         if(e.target.matches(".btn-danger")) {
             alumnos.map(item => {
-                if(item.nombre === e.target.dataset.nombre) {
+                if(item.uid === e.target.dataset.uid) {
                     item.setEstado = false
                 }
                 return item
@@ -36,10 +37,18 @@ document.addEventListener("click", (e) => {
 formulario.addEventListener ("submit", e => {
     e.preventDefault()
 
+    alert.classList.add("d-none")
+
     //Para capturar los datos utlizamos el form-data que coge los datos del valor del name que hemos introducido en los inputs.
     const datos = new FormData(formulario)
     const [nombre, edad, opcion] = [...datos.values()]//Destructuring
     console.log(nombre, edad, opcion);
+    
+    //Con el trim nos aseguramos que no dejan campos en blanco del formulario.
+    if(!nombre.trim() || !edad.trim() || !opcion.trim()) {
+        alert.classList.remove("d-none")
+        return 
+    }
 
     if (opcion === "Alumno") {
         const alumno = new Alumno(nombre, edad)
@@ -59,6 +68,8 @@ formulario.addEventListener ("submit", e => {
      constructor(nombre, edad) {
          this.nombre = nombre
          this.edad = edad
+         //Creamos un userId para que los users sean aleatorios y no se repitan con el mismo nombre. Utilzamos el Date.now() que nos devuelve un numero.
+         this.uid = `${Date.now()}`//Lo ponemos entre template strings para que nos lo transforme a un numero, ya que si se lo pasamos sin ellos, aunque le estemos pasando un numero, el data-form lo transforma en string, con lo cual no nos vale para que sean diferentes y lo asociemos a diferentes userIds.
      }
 
      //Creamos un metodo estatico para mostrar los datos en el div con id's cardsAlumnos y cardsProfesores.
@@ -122,9 +133,11 @@ formulario.addEventListener ("submit", e => {
             ? "Aprobado" 
             : "Suspendido"
 
-        clone.querySelector(".btn-success").dataset.nombre = this.nombre
-        clone.querySelector(".btn-danger").dataset.nombre = this.nombre
-
+       /*  clone.querySelector(".btn-success").dataset.nombre = this.nombre
+        clone.querySelector(".btn-danger").dataset.nombre = this.nombre */
+        //Reemplazamos el dataset de estas dos lineas de codigo para que nos coja el userId.
+        clone.querySelector(".btn-success").dataset.uid = this.uid
+        clone.querySelector(".btn-danger").dataset.uid = this.uid
 
         return clone
     }
